@@ -59,3 +59,5 @@ Run the test and quality commands from the repository root. The CI job uses
 Home Assistant's current Python runtime (3.14.2) and exercises the integration
 against the pinned Home Assistant release. Tagged releases package the HACS
 component and publish it as a GitHub release artifact.
+
+See [docs/releasing.md](docs/releasing.md) for the tag and HACS artifact flow.

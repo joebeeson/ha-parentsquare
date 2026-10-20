@@ -53,7 +53,7 @@ stable school identifiers. Group feeds currently contribute posts; ParentSquare
 does not expose a verified group-specific calendar endpoint in this release, so
 they are not presented as calendars.
 
-The current repository release pins the shared client to its `v0.2.1` tag.
+The current repository release pins the shared client to its `v0.2.2` tag.
 
 ## Privacy and removal
 

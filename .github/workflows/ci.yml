@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  checks: write
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -25,12 +26,32 @@ jobs:
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           enable-cache: true
+      - run: uv run python -c "from pathlib import Path; Path('artifacts').mkdir(exist_ok=True)"
       - run: >-
           uv run --no-project
           --with homeassistant==2026.10.2
-          --with "parentsquare-client @ git+https://github.com/joebeeson/parentsquare-client.git@v0.1.1"
+          --with "parentsquare-client @ git+https://github.com/joebeeson/parentsquare-client.git@v0.2.1"
           --with pytest
+          --with pytest-cov
+          --with pytest-datadir
           pytest tests
+          --junitxml=artifacts/junit.xml
+          --cov=custom_components.parentsquare
+          --cov-report=term-missing
+          --cov-report=xml:artifacts/coverage.xml
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-reports
+          path: artifacts/
+      - name: Publish test results
+        if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: dorny/test-reporter@d3cb5605561a46347256b466ef836b85076ad522 # v2.5.0
+        with:
+          name: pytest (Home Assistant)
+          path: artifacts/junit.xml
+          reporter: java-junit
 
   quality:
     name: quality
@@ -45,6 +66,21 @@ jobs:
           enable-cache: true
       - run: uv run --extra dev ruff check custom_components tests
       - run: uv run --extra dev ruff format --check custom_components tests
+      - run: uv run python -c "from pathlib import Path; Path('artifacts').mkdir(exist_ok=True)"
+      - run: uv run --extra dev pyrefly check --output junit-xml:artifacts/pyrefly.xml
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: quality-reports
+          path: artifacts/pyrefly.xml
+      - name: Publish type-check results
+        if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: dorny/test-reporter@d3cb5605561a46347256b466ef836b85076ad522 # v2.5.0
+        with:
+          name: pyrefly
+          path: artifacts/pyrefly.xml
+          reporter: java-junit
 
   package:
     name: package

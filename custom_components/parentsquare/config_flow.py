@@ -29,7 +29,7 @@ class ParentSquareConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._client = AsyncParentSquareClient(username, password)
             try:
                 await self._client.ensure_authenticated()
-                await self._client.discover_schools()
+                await self._client.discover_account()
             except MFARequired as err:
                 self._mfa_hint = err.contact_hint
                 return await self.async_step_mfa()
@@ -41,7 +41,7 @@ class ParentSquareConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return await self._async_create_or_update_entry()
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema(
+            data_schema=vol.Schema(  # pyrefly: ignore [bad-argument-type]
                 {
                     vol.Required("username"): str,
                     vol.Required("password"): str,
@@ -55,7 +55,7 @@ class ParentSquareConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None and self._client is not None:
             try:
                 await self._client.submit_mfa_code(user_input["code"])
-                await self._client.discover_schools()
+                await self._client.discover_account()
             except AuthenticationError:
                 errors["base"] = "invalid_auth"
             except Exception:
@@ -66,7 +66,7 @@ class ParentSquareConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="mfa",
             description_placeholders={"destination": description or "your verified contact"},
-            data_schema=vol.Schema({vol.Required("code"): str}),
+            data_schema=vol.Schema({vol.Required("code"): str}),  # pyrefly: ignore [bad-argument-type]
             errors=errors,
         )
 

@@ -22,6 +22,9 @@ policies before installing it.
 - one combined ParentSquare calendar with available school events;
 - a `ParentSquare new post` event entity with a small, automation-safe payload;
 - sensors for the latest post title and the number of recently fetched posts;
+- parent-visible school and student context is available to the coordinator for
+  future source selection without putting student details into entity
+  attributes;
 - config-flow login with a six-digit MFA step when ParentSquare requires it;
 - automatic reauthentication when the ParentSquare session expires.
 
@@ -42,7 +45,7 @@ is accepted by the community catalog.
 Restart Home Assistant, then add **ParentSquare** from Settings → Devices &
 services.
 
-The current repository release pins the shared client to its `v0.1.1` tag.
+The current repository release pins the shared client to its `v0.2.1` tag.
 
 ## Privacy and removal
 

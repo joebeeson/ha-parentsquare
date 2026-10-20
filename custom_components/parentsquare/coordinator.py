@@ -19,6 +19,8 @@ from parentsquare import (
     MFARequired,
     Post,
     RateLimitError,
+    School,
+    Student,
 )
 
 from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, STORAGE_KEY_PREFIX, STORAGE_VERSION
@@ -32,6 +34,8 @@ class ParentSquareData:
     posts: tuple[Post, ...]
     calendar_events: tuple[CalendarEvent, ...]
     new_posts: tuple[Post, ...]
+    schools: tuple[School, ...] = ()
+    students: tuple[Student, ...] = ()
 
 
 class ParentSquareCoordinator(DataUpdateCoordinator[ParentSquareData]):
@@ -63,8 +67,9 @@ class ParentSquareCoordinator(DataUpdateCoordinator[ParentSquareData]):
 
     async def _async_update_data(self) -> ParentSquareData:
         try:
-            posts = await self.client.fetch_all_posts()
-            events = await self.client.fetch_all_calendar_events()
+            account = await self.client.discover_account()
+            posts = await self.client.fetch_all_posts(account.schools)
+            events = await self.client.fetch_all_calendar_events(account.schools)
         except MFARequired as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except AuthenticationError as err:
@@ -91,7 +96,13 @@ class ParentSquareCoordinator(DataUpdateCoordinator[ParentSquareData]):
                 "baseline_complete": self._baseline_complete,
             }
         )
-        return ParentSquareData(tuple(posts), tuple(events), tuple(new_posts))
+        return ParentSquareData(
+            tuple(posts),
+            tuple(events),
+            tuple(new_posts),
+            account.schools,
+            account.students,
+        )
 
     async def async_shutdown(self) -> None:
         await self.client.close()

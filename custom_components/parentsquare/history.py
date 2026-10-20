@@ -8,7 +8,7 @@ class PostHistory:
 
     def __init__(self, post_ids: Iterable[str] = (), *, limit: int = 500) -> None:
         self.limit = limit
-        self._post_ids = list(dict.fromkeys(str(post_id) for post_id in post_ids))[-limit:]
+        self._post_ids = list(dict.fromkeys(post_ids))[-limit:]
 
     @property
     def post_ids(self) -> list[str]:
@@ -18,7 +18,7 @@ class PostHistory:
         new_ids: list[str] = []
         known = set(self._post_ids)
         for post_id in post_ids:
-            value = str(post_id)
+            value = post_id
             if value not in known:
                 new_ids.append(value)
                 known.add(value)

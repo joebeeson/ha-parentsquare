@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/joebeeson/ha-parentsquare/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/joebeeson/ha-parentsquare/actions/workflows/ci.yml)
 [![Prek](https://github.com/joebeeson/ha-parentsquare/actions/workflows/prek.yml/badge.svg?branch=master)](https://github.com/joebeeson/ha-parentsquare/actions/workflows/prek.yml)
+[![HACS validation](https://github.com/joebeeson/ha-parentsquare/actions/workflows/hacs.yml/badge.svg?branch=master)](https://github.com/joebeeson/ha-parentsquare/actions/workflows/hacs.yml)
 [![CodeQL](https://github.com/joebeeson/ha-parentsquare/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/joebeeson/ha-parentsquare/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/joebeeson/ha-parentsquare/badge)](https://securityscorecards.dev/viewer/?uri=github.com/joebeeson/ha-parentsquare)
 [![Latest release](https://img.shields.io/github/v/release/joebeeson/ha-parentsquare?sort=semver)](https://github.com/joebeeson/ha-parentsquare/releases)
@@ -34,8 +35,10 @@ instance you trust.
 ## Installation
 
 For development, copy `custom_components/parentsquare` into the Home Assistant
-`config/custom_components` directory. For HACS, add this repository as a
-custom Integration repository until it is accepted by the community catalog.
+`config/custom_components` directory. You can open this repository directly in
+HACS with the [HACS install link](https://my.home-assistant.io/redirect/hacs_repository/?owner=joebeeson&repository=ha-parentsquare&category=integration),
+or add `joebeeson/ha-parentsquare` as a custom Integration repository until it
+is accepted by the community catalog.
 Restart Home Assistant, then add **ParentSquare** from Settings → Devices &
 services.
 

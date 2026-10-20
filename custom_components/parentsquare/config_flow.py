@@ -3,7 +3,6 @@ from __future__ import annotations
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult
-
 from parentsquare import AsyncParentSquareClient, AuthenticationError, MFARequired
 
 from .const import DOMAIN
@@ -83,6 +82,4 @@ class ParentSquareConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._reauth_entry,
                 data_updates=self._credentials,
             )
-        return self.async_create_entry(
-            title=self._credentials["username"], data=self._credentials
-        )
+        return self.async_create_entry(title=self._credentials["username"], data=self._credentials)

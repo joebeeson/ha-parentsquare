@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from parentsquare import Post
+
 from custom_components.parentsquare.helpers import post_event_attributes
 
 

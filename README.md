@@ -1,5 +1,12 @@
 # ha-parentsquare
 
+[![CI](https://github.com/joebeeson/ha-parentsquare/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/joebeeson/ha-parentsquare/actions/workflows/ci.yml)
+[![Prek](https://github.com/joebeeson/ha-parentsquare/actions/workflows/prek.yml/badge.svg?branch=master)](https://github.com/joebeeson/ha-parentsquare/actions/workflows/prek.yml)
+[![CodeQL](https://github.com/joebeeson/ha-parentsquare/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/joebeeson/ha-parentsquare/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/joebeeson/ha-parentsquare/badge)](https://securityscorecards.dev/viewer/?uri=github.com/joebeeson/ha-parentsquare)
+[![Latest release](https://img.shields.io/github/v/release/joebeeson/ha-parentsquare?sort=semver)](https://github.com/joebeeson/ha-parentsquare/releases)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Home Assistant integration for the unofficial, read-only ParentSquare client.
 
 This integration reads ParentSquare's authenticated parent web experience via
@@ -45,3 +52,10 @@ ParentSquare. Remove the config entry to stop polling and remove the custom
 component directory after the entry is deleted. Do not include real posts,
 cookies, credentials, or private calendar URLs in bug reports; use synthetic
 fixtures instead.
+
+## Development
+
+Run the test and quality commands from the repository root. The CI job uses
+Home Assistant's current Python runtime (3.14.2) and exercises the integration
+against the pinned Home Assistant release. Tagged releases package the HACS
+component and publish it as a GitHub release artifact.

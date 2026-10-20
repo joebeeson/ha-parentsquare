@@ -19,9 +19,7 @@ async def async_setup_entry(
     async_add_entities([ParentSquarePostEvent(hass.data[DOMAIN][entry.entry_id], entry)])
 
 
-class ParentSquarePostEvent(
-    CoordinatorEntity[ParentSquareCoordinator], EventEntity
-):
+class ParentSquarePostEvent(CoordinatorEntity[ParentSquareCoordinator], EventEntity):
     _attr_has_entity_name = True
     _attr_name = "New post"
     _attr_icon = "mdi:school-outline"

@@ -41,8 +41,7 @@ class ParentSquareLatestPostSensor(CoordinatorEntity[ParentSquareCoordinator], S
             return None
         latest = max(
             self.coordinator.data.posts,
-            key=lambda post: post.published_at
-            or datetime.min.replace(tzinfo=timezone.utc),
+            key=lambda post: post.published_at or datetime.min.replace(tzinfo=timezone.utc),
         )
         return latest.title or None
 

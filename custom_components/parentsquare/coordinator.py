@@ -1,18 +1,17 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import timedelta
-import logging
-from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
-from homeassistant.exceptions import ConfigEntryAuthFailed
 from parentsquare import (
     AsyncParentSquareClient,
     AuthenticationError,
@@ -40,9 +39,7 @@ class ParentSquareCoordinator(DataUpdateCoordinator[ParentSquareData]):
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         self.entry = entry
-        self.client = AsyncParentSquareClient(
-            entry.data["username"], entry.data["password"]
-        )
+        self.client = AsyncParentSquareClient(entry.data["username"], entry.data["password"])
         self._store = Store(
             hass,
             STORAGE_VERSION,
@@ -74,9 +71,7 @@ class ParentSquareCoordinator(DataUpdateCoordinator[ParentSquareData]):
             raise ConfigEntryAuthFailed(str(err)) from err
         except RateLimitError as err:
             if err.retry_after is not None:
-                self.update_interval = timedelta(
-                    seconds=min(max(err.retry_after, 60), 6 * 60 * 60)
-                )
+                self.update_interval = timedelta(seconds=min(max(err.retry_after, 60), 6 * 60 * 60))
             raise UpdateFailed(str(err)) from err
         except Exception as err:
             raise UpdateFailed("Unable to read ParentSquare") from err

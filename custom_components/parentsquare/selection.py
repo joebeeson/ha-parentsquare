@@ -29,20 +29,31 @@ def group_key(group: Group) -> str:
 
 
 def selected_groups(groups: Iterable[Group], options: Mapping[str, object]) -> list[Group]:
+    discovered = list(groups)
+    if CONF_GROUP_KEYS not in options:
+        # Entries created before group selection existed keep the useful
+        # all-groups behavior.  The options flow writes an explicit list when
+        # a user wants to narrow or disable group feeds.
+        return discovered
     configured = options.get(CONF_GROUP_KEYS)
     if not isinstance(configured, (list, tuple, set)):
         return []
     allowed = {str(value) for value in configured}
-    return [group for group in groups if group_key(group) in allowed]
+    return [group for group in discovered if group_key(group) in allowed]
 
 
 def merge_posts(*post_lists: Iterable[Post]) -> list[Post]:
     """Merge school and selected-group feeds without duplicate post IDs."""
     merged: list[Post] = []
-    seen: set[str] = set()
+    indexes: dict[str, int] = {}
     for posts in post_lists:
         for post in posts:
-            if post.id not in seen:
-                seen.add(post.id)
+            index = indexes.get(post.id)
+            if index is None:
+                indexes[post.id] = len(merged)
                 merged.append(post)
+            elif merged[index].group_id is None and post.group_id is not None:
+                # A school feed and a group feed can contain the same post.
+                # Keep the richer group source metadata when it is available.
+                merged[index] = post
     return merged

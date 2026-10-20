@@ -21,11 +21,15 @@ policies before installing it.
 
 - one combined ParentSquare calendar with available school events, plus an
   individually selectable calendar for each discovered school;
-- optional group-feed polling for groups selected in the integration options;
+- school and group feed polling, with group feeds selected by default and
+  controllable from the integration options;
 - a `ParentSquare new post` event entity with a small, automation-safe payload;
-- sensors for the latest post title and the number of recently fetched posts;
-- parent-visible school, student, and selected group context is available to
-  the coordinator without putting student details into entity attributes;
+- sensors for the latest post title, recent post count, and a bounded recent
+  post feed containing source links and short excerpts;
+- source-specific latest/count sensors for each selected school and group, so
+  automations can target one source without parsing post text;
+- parent-visible students are tracked by stable ID, and discovered groups keep
+  the IDs of linked students when ParentSquare supplies that relationship;
 - config-flow login with a six-digit MFA step when ParentSquare requires it;
 - automatic reauthentication when the ParentSquare session expires.
 
@@ -48,12 +52,37 @@ services.
 
 After setup, open the ParentSquare integration's **Configure** action to choose
 which schools are included, whether to keep the combined calendar, and which
-group feeds should be polled. School calendars are filtered by ParentSquare's
-stable school identifiers. Group feeds currently contribute posts; ParentSquare
-does not expose a verified group-specific calendar endpoint in this release, so
-they are not presented as calendars.
+group feeds should be polled. Group choices include the linked student names
+when ParentSquare provides that association. School calendars are filtered by
+ParentSquare's stable school identifiers. Group feeds currently contribute
+posts; ParentSquare does not expose a verified group-specific calendar endpoint
+in this release, so they are not presented as calendars.
 
-The current repository release pins the shared client to its `v0.2.2` tag.
+The `sensor.recent_posts` entity is intended as the central dashboard feed. Its
+`posts` attribute is bounded to the most recent 20 records and includes title,
+timestamp, source URL, school/group IDs and names, and a short excerpt. A
+Markdown card can make those source URLs clickable:
+
+```yaml
+type: markdown
+title: ParentSquare
+content: |
+  {% set posts = state_attr('sensor.recent_posts', 'posts') or [] %}
+  {% if not posts %}
+  No recent posts.
+  {% else %}
+  {% for post in posts %}
+  - [{{ post.title }}]({{ post.source_url }}) · {{ post.school_name }}{% if post.group_name %} · {{ post.group_name }}{% endif %}
+  {% endfor %}
+  {% endif %}
+```
+
+Templates can filter the same records by stable source ID, for example with
+`selectattr('school_id', 'equalto', 12345)` or
+`selectattr('group_id', 'equalto', 67890)`. The IDs are the source's IDs and
+are not inferred from a child's name or from post prose.
+
+The current repository release pins the shared client to its `v0.2.3` tag.
 
 ## Privacy and removal
 

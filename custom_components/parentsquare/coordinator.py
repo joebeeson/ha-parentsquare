@@ -25,7 +25,6 @@ from parentsquare import (
 )
 
 from .const import (
-    CONF_GROUP_KEYS,
     CONF_INCLUDE_COMBINED_CALENDAR,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -83,20 +82,23 @@ class ParentSquareCoordinator(DataUpdateCoordinator[ParentSquareData]):
             events = await self.client.fetch_all_calendar_events(schools)
 
             selected_group_posts: list[Post] = []
-            groups: list[Group] = []
-            configured_group_keys = self.entry.options.get(CONF_GROUP_KEYS)
-            if isinstance(configured_group_keys, (list, tuple, set)) and configured_group_keys:
-                discovered_groups: list[Group] = []
-                for school in schools:
-                    discovered_groups.extend(await self.client.fetch_groups(school))
-                groups = selected_groups(discovered_groups, self.entry.options)
-                school_by_id = {school.id: school for school in schools}
-                for group in groups:
-                    school = school_by_id.get(group.school_id)
-                    if school is not None:
-                        selected_group_posts.extend(
-                            await self.client.fetch_group_posts(school, group)
-                        )
+            discovered_groups: list[Group] = []
+            for school in schools:
+                discovered_groups.extend(
+                    await self.client.fetch_groups(school, students=account.students)
+                )
+            groups = selected_groups(discovered_groups, self.entry.options)
+            school_by_id = {school.id: school for school in schools}
+            for group in groups:
+                school = school_by_id.get(group.school_id)
+                if school is None:
+                    continue
+                try:
+                    selected_group_posts.extend(await self.client.fetch_group_posts(school, group))
+                except (AuthenticationError, RateLimitError):
+                    raise
+                except Exception:
+                    LOGGER.debug("Unable to read ParentSquare group %s", group.id, exc_info=True)
             posts = merge_posts(posts, selected_group_posts)
         except MFARequired as err:
             raise ConfigEntryAuthFailed(str(err)) from err

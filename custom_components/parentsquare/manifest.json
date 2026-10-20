@@ -7,7 +7,7 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/joebeeson/ha-parentsquare/issues",
   "requirements": [
-    "parentsquare-client@git+https://github.com/joebeeson/parentsquare-client.git@v0.2.2"
+    "parentsquare-client@git+https://github.com/joebeeson/parentsquare-client.git@v0.2.3"
   ],
-  "version": "0.3.1"
+  "version": "0.4.0"
 }

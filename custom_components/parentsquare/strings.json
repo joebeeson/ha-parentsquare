@@ -29,7 +29,7 @@
     "step": {
       "init": {
         "title": "ParentSquare sources",
-        "description": "Choose which schools and optional group feeds Home Assistant should expose.",
+        "description": "Choose which schools and group feeds Home Assistant should expose. Groups are selected by default and include linked student context when available.",
         "data": {
           "school_ids": "Schools",
           "include_combined_calendar": "Include the combined all-schools calendar",

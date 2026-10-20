@@ -7,7 +7,7 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import callback
 from homeassistant.helpers import selector
-from parentsquare import AsyncParentSquareClient, AuthenticationError, MFARequired
+from parentsquare import AsyncParentSquareClient, AuthenticationError, MFARequired, Student
 
 from .const import (
     CONF_GROUP_KEYS,
@@ -108,6 +108,7 @@ class ParentSquareOptionsFlow(config_entries.OptionsFlowWithReload):
     def __init__(self) -> None:
         self._schools = []
         self._groups = []
+        self._students: list[Student] = []
 
     async def async_step_init(self, user_input=None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
@@ -140,15 +141,17 @@ class ParentSquareOptionsFlow(config_entries.OptionsFlowWithReload):
         group_options = [
             {
                 "value": group_key(group),
-                "label": f"{group.school_name or f'School {group.school_id}'} · {group.name}",
+                "label": self._group_label(group),
             }
             for group in self._groups
         ]
         current_school_ids = self.config_entry.options.get(CONF_SCHOOL_IDS)
         if not isinstance(current_school_ids, (list, tuple, set)) or not current_school_ids:
             current_school_ids = [str(school.id) for school in self._schools]
-        current_group_keys = self.config_entry.options.get(CONF_GROUP_KEYS, [])
-        if not isinstance(current_group_keys, (list, tuple, set)):
+        current_group_keys = self.config_entry.options.get(CONF_GROUP_KEYS)
+        if current_group_keys is None:
+            current_group_keys = [group_key(group) for group in self._groups]
+        elif not isinstance(current_group_keys, (list, tuple, set)):
             current_group_keys = []
         return self.async_show_form(
             step_id="init",
@@ -191,10 +194,11 @@ class ParentSquareOptionsFlow(config_entries.OptionsFlowWithReload):
             await client.ensure_authenticated()
             account = await client.discover_account(force_refresh=True)
             self._schools = list(account.schools)
+            self._students = list(account.students)
             groups = []
             for school in self._schools:
                 try:
-                    groups.extend(await client.fetch_groups(school))
+                    groups.extend(await client.fetch_groups(school, students=account.students))
                 except AuthenticationError:
                     raise
                 except Exception:
@@ -204,3 +208,12 @@ class ParentSquareOptionsFlow(config_entries.OptionsFlowWithReload):
             self._groups = groups
         finally:
             await client.close()
+
+    def _group_label(self, group) -> str:
+        label = f"{group.school_name or f'School {group.school_id}'} · {group.name}"
+        names = [
+            student.name
+            for student in self._students
+            if student.id in group.student_ids and student.name
+        ]
+        return f"{label} · {', '.join(names)}" if names else label

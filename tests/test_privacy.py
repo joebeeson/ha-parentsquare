@@ -21,3 +21,4 @@ def test_event_attributes_do_not_include_body_or_attachments() -> None:
     assert "summary" not in attrs
     assert "body" not in attrs
     assert "attachments" not in attrs
+    assert "group_name" in attrs

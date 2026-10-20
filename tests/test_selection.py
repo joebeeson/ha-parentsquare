@@ -24,6 +24,8 @@ def test_group_selection_is_scoped_by_school_and_stable_key() -> None:
     ]
 
     assert group_key(groups[0]) == "101:55"
+    assert selected_groups(groups, {}) == groups
+    assert selected_groups(groups, {"group_keys": []}) == []
     assert selected_groups(groups, {"group_keys": ["101:56"]}) == [groups[1]]
 
 
@@ -49,4 +51,17 @@ def test_merge_posts_deduplicates_overlapping_school_and_group_feeds() -> None:
         group_id=55,
     )
 
+    enriched = Post(
+        "1",
+        "First",
+        None,
+        datetime(2026, 10, 20, tzinfo=timezone.utc),
+        "https://example.test/1",
+        101,
+        "Middle",
+        group_id=55,
+        group_name="Cooking Club",
+    )
+
     assert merge_posts([first], [duplicate, second]) == [first, second]
+    assert merge_posts([first], [enriched])[0] == enriched

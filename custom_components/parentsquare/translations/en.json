@@ -29,10 +29,11 @@
     "step": {
       "init": {
         "title": "ParentSquare sources",
-        "description": "Choose which schools and group feeds Home Assistant should expose. Groups are selected by default and include linked student context when available.",
+        "description": "Choose which schools and group feeds Home Assistant should expose. Groups linked to students are selected by default; enable unassigned groups when you want the complete group catalog.",
         "data": {
           "school_ids": "Schools",
           "include_combined_calendar": "Include the combined all-schools calendar",
+          "include_unassigned_groups": "Include groups without linked students",
           "group_keys": "Group feeds"
         }
       }

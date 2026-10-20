@@ -12,6 +12,7 @@ from parentsquare import AsyncParentSquareClient, AuthenticationError, MFARequir
 from .const import (
     CONF_GROUP_KEYS,
     CONF_INCLUDE_COMBINED_CALENDAR,
+    CONF_INCLUDE_UNASSIGNED_GROUPS,
     CONF_SCHOOL_IDS,
     DOMAIN,
 )
@@ -124,6 +125,9 @@ class ParentSquareOptionsFlow(config_entries.OptionsFlowWithReload):
                         CONF_INCLUDE_COMBINED_CALENDAR: bool(
                             user_input.get(CONF_INCLUDE_COMBINED_CALENDAR, True)
                         ),
+                        CONF_INCLUDE_UNASSIGNED_GROUPS: bool(
+                            user_input.get(CONF_INCLUDE_UNASSIGNED_GROUPS, False)
+                        ),
                         CONF_GROUP_KEYS: [
                             str(value) for value in user_input.get(CONF_GROUP_KEYS, [])
                         ],
@@ -138,19 +142,25 @@ class ParentSquareOptionsFlow(config_entries.OptionsFlowWithReload):
             errors["base"] = "cannot_connect"
 
         options = [{"value": str(school.id), "label": school.name} for school in self._schools]
+        include_unassigned = self.config_entry.options.get(CONF_INCLUDE_UNASSIGNED_GROUPS, False)
+        eligible_groups = (
+            self._groups
+            if include_unassigned
+            else [group for group in self._groups if group.student_ids]
+        )
         group_options = [
             {
                 "value": group_key(group),
                 "label": self._group_label(group),
             }
-            for group in self._groups
+            for group in eligible_groups
         ]
         current_school_ids = self.config_entry.options.get(CONF_SCHOOL_IDS)
         if not isinstance(current_school_ids, (list, tuple, set)) or not current_school_ids:
             current_school_ids = [str(school.id) for school in self._schools]
         current_group_keys = self.config_entry.options.get(CONF_GROUP_KEYS)
         if current_group_keys is None:
-            current_group_keys = [group_key(group) for group in self._groups]
+            current_group_keys = [group_key(group) for group in eligible_groups]
         elif not isinstance(current_group_keys, (list, tuple, set)):
             current_group_keys = []
         return self.async_show_form(
@@ -170,6 +180,10 @@ class ParentSquareOptionsFlow(config_entries.OptionsFlowWithReload):
                     vol.Required(
                         CONF_INCLUDE_COMBINED_CALENDAR,
                         default=self.config_entry.options.get(CONF_INCLUDE_COMBINED_CALENDAR, True),
+                    ): bool,
+                    vol.Required(
+                        CONF_INCLUDE_UNASSIGNED_GROUPS,
+                        default=include_unassigned,
                     ): bool,
                     vol.Optional(
                         CONF_GROUP_KEYS,

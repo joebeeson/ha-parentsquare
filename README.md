@@ -51,9 +51,11 @@ Restart Home Assistant, then add **ParentSquare** from Settings → Devices &
 services.
 
 After setup, open the ParentSquare integration's **Configure** action to choose
-which schools are included, whether to keep the combined calendar, and which
-group feeds should be polled. Group choices include the linked student names
-when ParentSquare provides that association. School calendars are filtered by
+which schools are included, whether to keep the combined calendar, whether to
+include groups without linked students, and which group feeds should be polled.
+Groups linked to students are enabled by default; the unassigned-groups toggle
+keeps the complete group catalog available when needed. Group choices include
+the linked student names when ParentSquare provides that association. School calendars are filtered by
 ParentSquare's stable school identifiers. Group feeds currently contribute
 posts; ParentSquare does not expose a verified group-specific calendar endpoint
 in this release, so they are not presented as calendars.

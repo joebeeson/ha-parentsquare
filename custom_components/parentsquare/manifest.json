@@ -9,5 +9,5 @@
   "requirements": [
     "parentsquare-client@git+https://github.com/joebeeson/parentsquare-client.git@v0.2.4"
   ],
-  "version": "0.4.2"
+  "version": "0.4.3"
 }

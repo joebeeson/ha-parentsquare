@@ -25,7 +25,7 @@ jobs:
       - run: >-
           uv run --no-project
           --with homeassistant==2026.10.2
-          --with "parentsquare-client @ git+https://github.com/joebeeson/parentsquare-client.git@v0.2.2"
+          --with "parentsquare-client @ git+https://github.com/joebeeson/parentsquare-client.git@v0.2.4"
           --with pytest
           pytest tests
       - run: uv run --extra dev ruff check custom_components tests

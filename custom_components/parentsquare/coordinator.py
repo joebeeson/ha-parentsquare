@@ -13,6 +13,7 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 from parentsquare import (
+    AccessDeniedError,
     AsyncParentSquareClient,
     AuthenticationError,
     CalendarEvent,
@@ -97,7 +98,7 @@ class ParentSquareCoordinator(DataUpdateCoordinator[ParentSquareData]):
                     selected_group_posts.extend(await self.client.fetch_group_posts(school, group))
                 except RateLimitError:
                     raise
-                except AuthenticationError:
+                except (AccessDeniedError, AuthenticationError):
                     # ParentSquare lists some groups in the picker while
                     # refusing their feed endpoint for this parent.  The
                     # school feed and other accessible groups remain useful;

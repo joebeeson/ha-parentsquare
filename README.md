@@ -82,7 +82,7 @@ Templates can filter the same records by stable source ID, for example with
 `selectattr('group_id', 'equalto', 67890)`. The IDs are the source's IDs and
 are not inferred from a child's name or from post prose.
 
-The current repository release pins the shared client to its `v0.2.3` tag.
+The current repository release pins the shared client to its `v0.2.4` tag.
 
 ## Privacy and removal
 

@@ -16,6 +16,7 @@ from parentsquare import (
     AsyncParentSquareClient,
     AuthenticationError,
     CalendarEvent,
+    Group,
     MFARequired,
     Post,
     RateLimitError,
@@ -23,8 +24,16 @@ from parentsquare import (
     Student,
 )
 
-from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, STORAGE_KEY_PREFIX, STORAGE_VERSION
+from .const import (
+    CONF_GROUP_KEYS,
+    CONF_INCLUDE_COMBINED_CALENDAR,
+    DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
+    STORAGE_KEY_PREFIX,
+    STORAGE_VERSION,
+)
 from .history import PostHistory
+from .selection import merge_posts, selected_groups, selected_schools
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,6 +45,7 @@ class ParentSquareData:
     new_posts: tuple[Post, ...]
     schools: tuple[School, ...] = ()
     students: tuple[Student, ...] = ()
+    groups: tuple[Group, ...] = ()
 
 
 class ParentSquareCoordinator(DataUpdateCoordinator[ParentSquareData]):
@@ -68,8 +78,26 @@ class ParentSquareCoordinator(DataUpdateCoordinator[ParentSquareData]):
     async def _async_update_data(self) -> ParentSquareData:
         try:
             account = await self.client.discover_account()
-            posts = await self.client.fetch_all_posts(account.schools)
-            events = await self.client.fetch_all_calendar_events(account.schools)
+            schools = selected_schools(account.schools, self.entry.options)
+            posts = await self.client.fetch_all_posts(schools)
+            events = await self.client.fetch_all_calendar_events(schools)
+
+            selected_group_posts: list[Post] = []
+            groups: list[Group] = []
+            configured_group_keys = self.entry.options.get(CONF_GROUP_KEYS)
+            if isinstance(configured_group_keys, (list, tuple, set)) and configured_group_keys:
+                discovered_groups: list[Group] = []
+                for school in schools:
+                    discovered_groups.extend(await self.client.fetch_groups(school))
+                groups = selected_groups(discovered_groups, self.entry.options)
+                school_by_id = {school.id: school for school in schools}
+                for group in groups:
+                    school = school_by_id.get(group.school_id)
+                    if school is not None:
+                        selected_group_posts.extend(
+                            await self.client.fetch_group_posts(school, group)
+                        )
+            posts = merge_posts(posts, selected_group_posts)
         except MFARequired as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except AuthenticationError as err:
@@ -100,9 +128,16 @@ class ParentSquareCoordinator(DataUpdateCoordinator[ParentSquareData]):
             tuple(posts),
             tuple(events),
             tuple(new_posts),
-            account.schools,
+            tuple(schools),
             account.students,
+            tuple(groups),
         )
 
     async def async_shutdown(self) -> None:
         await self.client.close()
+
+    @property
+    def include_combined_calendar(self) -> bool:
+        """Whether the all-schools calendar entity should be created."""
+        value = self.entry.options.get(CONF_INCLUDE_COMBINED_CALENDAR)
+        return value is not False

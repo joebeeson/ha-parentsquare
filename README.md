@@ -19,12 +19,13 @@ policies before installing it.
 
 ## What it provides
 
-- one combined ParentSquare calendar with available school events;
+- one combined ParentSquare calendar with available school events, plus an
+  individually selectable calendar for each discovered school;
+- optional group-feed polling for groups selected in the integration options;
 - a `ParentSquare new post` event entity with a small, automation-safe payload;
 - sensors for the latest post title and the number of recently fetched posts;
-- parent-visible school and student context is available to the coordinator for
-  future source selection without putting student details into entity
-  attributes;
+- parent-visible school, student, and selected group context is available to
+  the coordinator without putting student details into entity attributes;
 - config-flow login with a six-digit MFA step when ParentSquare requires it;
 - automatic reauthentication when the ParentSquare session expires.
 
@@ -44,6 +45,13 @@ or add `joebeeson/ha-parentsquare` as a custom Integration repository until it
 is accepted by the community catalog.
 Restart Home Assistant, then add **ParentSquare** from Settings → Devices &
 services.
+
+After setup, open the ParentSquare integration's **Configure** action to choose
+which schools are included, whether to keep the combined calendar, and which
+group feeds should be polled. School calendars are filtered by ParentSquare's
+stable school identifiers. Group feeds currently contribute posts; ParentSquare
+does not expose a verified group-specific calendar endpoint in this release, so
+they are not presented as calendars.
 
 The current repository release pins the shared client to its `v0.2.1` tag.
 

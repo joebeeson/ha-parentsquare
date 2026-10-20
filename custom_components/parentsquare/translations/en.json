@@ -1,0 +1,46 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect ParentSquare",
+        "description": "Sign in to your ParentSquare parent account.",
+        "data": {
+          "username": "Email or username",
+          "password": "Password"
+        }
+      },
+      "mfa": {
+        "title": "Verify ParentSquare sign-in",
+        "description": "Enter the code sent to {destination}.",
+        "data": {
+          "code": "Six-digit verification code"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "ParentSquare rejected the sign-in or verification code.",
+      "cannot_connect": "Unable to connect to ParentSquare."
+    },
+    "abort": {
+      "already_configured": "This ParentSquare account is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ParentSquare sources",
+        "description": "Choose which schools and optional group feeds Home Assistant should expose.",
+        "data": {
+          "school_ids": "Schools",
+          "include_combined_calendar": "Include the combined all-schools calendar",
+          "group_keys": "Group feeds"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "ParentSquare rejected the stored sign-in.",
+      "cannot_connect": "Unable to discover ParentSquare schools and groups.",
+      "no_school": "Select at least one school."
+    }
+  }
+}

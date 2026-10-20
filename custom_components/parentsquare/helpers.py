@@ -16,6 +16,7 @@ def post_event_attributes(post: Post) -> dict[str, Any]:
         "source_url": post.source_url,
         "school_id": post.school_id,
         "school_name": post.school_name,
+        "group_id": post.group_id,
     }
 
 

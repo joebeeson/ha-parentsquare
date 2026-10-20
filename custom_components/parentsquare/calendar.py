@@ -19,7 +19,15 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    async_add_entities([ParentSquareCalendar(hass.data[DOMAIN][entry.entry_id], entry)])
+    coordinator = hass.data[DOMAIN][entry.entry_id]
+    entities: list[ParentSquareCalendar] = []
+    if coordinator.include_combined_calendar:
+        entities.append(ParentSquareCalendar(coordinator, entry))
+    entities.extend(
+        ParentSquareCalendar(coordinator, entry, school_id=school.id, school_name=school.name)
+        for school in coordinator.data.schools
+    )
+    async_add_entities(entities)
 
 
 class ParentSquareCalendar(CoordinatorEntity[ParentSquareCoordinator], CalendarEntity):
@@ -27,21 +35,40 @@ class ParentSquareCalendar(CoordinatorEntity[ParentSquareCoordinator], CalendarE
     _attr_name = "Calendar"
     _attr_icon = "mdi:school"
 
-    def __init__(self, coordinator: ParentSquareCoordinator, entry: ConfigEntry) -> None:
+    def __init__(
+        self,
+        coordinator: ParentSquareCoordinator,
+        entry: ConfigEntry,
+        *,
+        school_id: int | None = None,
+        school_name: str | None = None,
+    ) -> None:
         super().__init__(coordinator)
-        self._attr_unique_id = f"{entry.entry_id}_calendar"
+        self._school_id = school_id
+        self._attr_name = f"{school_name} Calendar" if school_name else "Calendar"
+        self._attr_unique_id = (
+            f"{entry.entry_id}_calendar_school_{school_id}"
+            if school_id is not None
+            else f"{entry.entry_id}_calendar"
+        )
+
+    @property
+    def _events(self):
+        if not self.coordinator.data:
+            return ()
+        if self._school_id is None:
+            return self.coordinator.data.calendar_events
+        return tuple(
+            event
+            for event in self.coordinator.data.calendar_events
+            if event.school_id == self._school_id
+        )
 
     @property
     def event(self) -> CalendarEvent | None:
-        if not self.coordinator.data:
-            return None
         now = dt_util.now()
         candidates = sorted(
-            (
-                event
-                for event in self.coordinator.data.calendar_events
-                if as_local_datetime(event.end, now.tzinfo) > now
-            ),
+            (event for event in self._events if as_local_datetime(event.end, now.tzinfo) > now),
             key=lambda item: as_local_datetime(item.start, now.tzinfo),
         )
         if not candidates:
@@ -51,11 +78,9 @@ class ParentSquareCalendar(CoordinatorEntity[ParentSquareCoordinator], CalendarE
     async def async_get_events(
         self, hass: HomeAssistant, start_date: datetime, end_date: datetime
     ) -> list[CalendarEvent]:
-        if not self.coordinator.data:
-            return []
         return [
             self._to_ha_event(event, start_date.tzinfo)
-            for event in self.coordinator.data.calendar_events
+            for event in self._events
             if overlaps(event, start_date, end_date, start_date.tzinfo)
         ]
 

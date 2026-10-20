@@ -39,10 +39,7 @@ custom Integration repository until it is accepted by the community catalog.
 Restart Home Assistant, then add **ParentSquare** from Settings → Devices &
 services.
 
-The current repository release pins the shared client to its `v0.1.1` tag. The
-separate [`dlt-parentsquare`](https://github.com/joebeeson/dlt-parentsquare)
-project uses the same client for data pipelines; Home Assistant does not need
-the dlt runtime.
+The current repository release pins the shared client to its `v0.1.1` tag.
 
 ## Privacy and removal
 

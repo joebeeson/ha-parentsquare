@@ -95,8 +95,15 @@ class ParentSquareCoordinator(DataUpdateCoordinator[ParentSquareData]):
                     continue
                 try:
                     selected_group_posts.extend(await self.client.fetch_group_posts(school, group))
-                except (AuthenticationError, RateLimitError):
+                except RateLimitError:
                     raise
+                except AuthenticationError:
+                    # ParentSquare lists some groups in the picker while
+                    # refusing their feed endpoint for this parent.  The
+                    # school feed and other accessible groups remain useful;
+                    # do not turn one group's permission response into a
+                    # credential failure for the whole entry.
+                    LOGGER.debug("ParentSquare group %s is not readable", group.id)
                 except Exception:
                     LOGGER.debug("Unable to read ParentSquare group %s", group.id, exc_info=True)
             posts = merge_posts(posts, selected_group_posts)

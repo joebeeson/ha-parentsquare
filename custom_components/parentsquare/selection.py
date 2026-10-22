@@ -4,7 +4,7 @@ from collections.abc import Iterable, Mapping
 
 from parentsquare import Group, Post, School
 
-from .const import CONF_GROUP_KEYS, CONF_SCHOOL_IDS
+from .const import CONF_GROUP_KEYS, CONF_INCLUDE_UNASSIGNED_GROUPS, CONF_SCHOOL_IDS
 
 
 def selected_schools(schools: Iterable[School], options: Mapping[str, object]) -> list[School]:
@@ -30,10 +30,12 @@ def group_key(group: Group) -> str:
 
 def selected_groups(groups: Iterable[Group], options: Mapping[str, object]) -> list[Group]:
     discovered = list(groups)
+    include_unassigned = options.get(CONF_INCLUDE_UNASSIGNED_GROUPS, False) is True
+    if not include_unassigned:
+        discovered = [group for group in discovered if group.student_ids]
     if CONF_GROUP_KEYS not in options:
-        # Entries created before group selection existed keep the useful
-        # all-groups behavior.  The options flow writes an explicit list when
-        # a user wants to narrow or disable group feeds.
+        # Entries created before group selection existed default to linked
+        # student groups. The explicit toggle keeps an all-groups escape hatch.
         return discovered
     configured = options.get(CONF_GROUP_KEYS)
     if not isinstance(configured, (list, tuple, set)):

@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from parentsquare import Group, Post, School
 
+from custom_components.parentsquare.const import CONF_INCLUDE_UNASSIGNED_GROUPS
 from custom_components.parentsquare.selection import (
     group_key,
     merge_posts,
@@ -20,13 +21,19 @@ def test_school_selection_defaults_to_all_and_preserves_order() -> None:
 def test_group_selection_is_scoped_by_school_and_stable_key() -> None:
     groups = [
         Group(55, "Cooking Club", 101, "Middle"),
-        Group(56, "Robotics", 101, "Middle"),
+        Group(56, "Robotics", 101, "Middle", student_ids=(7,)),
     ]
 
     assert group_key(groups[0]) == "101:55"
-    assert selected_groups(groups, {}) == groups
+    assert selected_groups(groups, {}) == [groups[1]]
+    assert selected_groups(groups, {CONF_INCLUDE_UNASSIGNED_GROUPS: True}) == groups
     assert selected_groups(groups, {"group_keys": []}) == []
     assert selected_groups(groups, {"group_keys": ["101:56"]}) == [groups[1]]
+    assert selected_groups(groups, {"group_keys": ["101:55"]}) == []
+    assert selected_groups(
+        groups,
+        {"group_keys": ["101:55"], CONF_INCLUDE_UNASSIGNED_GROUPS: True},
+    ) == [groups[0]]
 
 
 def test_merge_posts_deduplicates_overlapping_school_and_group_feeds() -> None:
